@@ -1,0 +1,6 @@
+
+.env
+backend/.env
+
+#for Air temp files
+backend/tmp
