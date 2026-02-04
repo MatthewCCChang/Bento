@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+//Used to pass back temp url to upload to S3 bucket
+message MenuURL{
+    optional string url = 1;
+}
