@@ -6,7 +6,8 @@ import (
 	"log"
 
 	"github.com/MatthewCCChang/Bento/backend/internal/db/create"
-	"github.com/MatthewCCChang/Bento/backend/internal/db/delete"
+	// "github.com/MatthewCCChang/Bento/backend/internal/db/delete"
+	"github.com/MatthewCCChang/Bento/backend/internal/db/update"
 	"github.com/joho/godotenv"
 )
 
@@ -31,6 +32,12 @@ func main() {
 	// 	return
 	// }
 	// fmt.Printf("Created %d rows\n", rows)
-	err = delete.DeleteTables(conn)
-	err = create.CreateTables(conn)
+
+	//deleting tables before creating them to avoid errors
+	//err = delete.DeleteTables(conn)
+	//creating tables
+	// err = create.CreateTables(conn)
+
+	//inserting rows into tables
+	_, err = update.InsertIntoTable(conn, "user", []string{"uuid", "email", "name", "password"}, []interface{}{"fa7cf439-0b66-43cb-9a9e-6e7abe026b5a", "123test@gmail.com", "John Doe", "password123"})
 }

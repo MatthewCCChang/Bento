@@ -39,16 +39,19 @@ func CreateTable(conn *pgxpool.Pool, name, schema string) (int64, error) {
 
 // create tables
 func CreateTables(conn *pgxpool.Pool) error {
-	tables := map[string]string{
-		"menu":       "id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, restaurant_id INT NOT NULL REFERENCES restaurant(id), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()",
-		"version":    "id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, menu_id INT NOT NULL REFERENCES menu(id), s3_url TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), is_active BOOLEAN NOT NULL",
-		"item":       "id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, version_id INT NOT NULL REFERENCES version(id), name TEXT NOT NULL, description TEXT, price NUMERIC(10,2) NOT NULL, category TEXT, modifiers JSONB",
-		"users":      "id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, uuid TEXT NOT NULL",
-		"restaurant": "id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name TEXT NOT NULL, address TEXT, phone TEXT",
+	names := []string{"menu", "version", "item", "users", "restaurant"}
+	schemas := []string{
+		"id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, restaurant_id INT NOT NULL REFERENCES restaurant(id), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()",
+		"id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, menu_id INT NOT NULL REFERENCES menu(id), s3_url TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), is_active BOOLEAN NOT NULL",
+		"id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, version_id INT NOT NULL REFERENCES version(id), name TEXT NOT NULL, description TEXT, price NUMERIC(10,2) NOT NULL, category TEXT, modifiers JSONB",
+		"id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, uuid TEXT NOT NULL, email TEXT, name TEXT, password TEXT",
+		"id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name TEXT NOT NULL, address TEXT, phone TEXT",
 	}
+	
 
-	for name, schema := range tables {
-		fmt.Printf("Creating table %s with schema %s\n", name, schema)
+	for i, name := range names {
+		schema := schemas[i]
+		fmt.Printf("Creating table %s with schema %s\n", name, schemas)
 		rows, err := CreateTable(conn, name, schema)
 		if err != nil {
 			log.Printf("Error creating table %s: %v\n", name, err)
