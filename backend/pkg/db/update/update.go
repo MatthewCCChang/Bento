@@ -14,8 +14,11 @@ func InsertIntoTable(conn *pgxpool.Pool, table string, columns []string, values 
 	if len != len2 {
 		return 0, fmt.Errorf("number of columns and values must be the same")
 	}
-
-	query := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s);`, table, joinColumns(columns), joinValues(values))
+	cols := joinColumns(columns)
+	vals := joinValues(values)
+	//fmt.Printf("Inserting into table %s with columns %s and values %s\n", table, cols, vals)
+	query := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s);`, table, cols, vals)
+	//fmt.Println("Query is ", query)
 	tag, err := conn.Exec(context.Background(), query)
 	if err != nil {
 		return 0, err
