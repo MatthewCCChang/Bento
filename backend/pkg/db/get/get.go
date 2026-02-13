@@ -5,9 +5,19 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	// "github.com/redis/go-redis/v9"
 )
 
 type JSONB []byte
+type Item struct{
+	Id int
+	Version_id int
+	Name string
+	Description string
+	Price float32
+	Category string
+	Modifiers JSONB
+}
 type AggregatedItem struct {
 	Name string //item + modifier
 	Price float32
@@ -37,7 +47,7 @@ func GetSessionOrder(conn *pgxpool.Pool, sessionId int) (map[string]interface{},
 		if err != nil {
 			return nil, err
 		}
-		key := item + string(modifiers) //combine item and modifiers to create unique key for aggregation
+		key := item + " " + string(modifiers) //combine item and modifiers to create unique key for aggregation
 		if _, ok := res[key]; !ok {
 			res[key] = AggregatedItem{
 				Name: key,
@@ -61,4 +71,15 @@ func GetSessionOrder(conn *pgxpool.Pool, sessionId int) (map[string]interface{},
 	
 	
 	return res, nil
+}
+
+
+//majorty will be redis
+//GetMenu - get from items table where version id is equal to blah if not cached already
+func GetMenu(conn *pgxpool.Conn, version_id, menu_id int) (Item, error){
+	//chekc if is redis alr  
+
+	//if yes, return the cached json
+	//if not, get menu id and version id then fetch items
+	return Item{}, nil
 }
