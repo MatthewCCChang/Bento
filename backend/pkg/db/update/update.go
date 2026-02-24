@@ -17,9 +17,8 @@ func InsertIntoTable(conn *pgxpool.Pool, table string, columns []string, values 
 	cols := joinColumns(columns)
 	vals := joinValues(values)
 	//fmt.Printf("Inserting into table %s with columns %s and values %s\n", table, cols, vals)
-	query := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s);`, table, cols, vals)
 	//fmt.Println("Query is ", query)
-	tag, err := conn.Exec(context.Background(), query)
+	tag, err := conn.Exec(context.Background(), `INSERT INTO $1 ($2) VALUES ($3);`, table, cols, vals)
 	if err != nil {
 		return 0, err
 	}

@@ -28,8 +28,7 @@ type AggregatedItem struct {
 
 //GetSessionOrder retrieves all rows belonging to the same order
 func GetSessionOrder(conn *pgxpool.Pool, sessionId int) (map[string]interface{}, error) {
-	query := fmt.Sprintf(`SELECT * AS total FROM orders WHERE id = %d;`, sessionId)
-	rows, err := conn.Query(context.Background(), query)
+	rows, err := conn.Query(context.Background(), `SELECT * AS total FROM orders WHERE id =$1;`, sessionId)
 
 	res := make(map[string]interface{}) 
 	defer rows.Close()
@@ -85,11 +84,9 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 	//if not, get menu id and version id then fetch items
 	if err != nil{
 		//fetch from db 
-		query := fmt.Sprintf(`SELECT id FROM version as v LEFT JOIN menu as m ON m.id=v.menu_id LEFT JOIN restaurant as r ON r.id=m.restaurant_id WHERE r.id=%d AND v.is_active=true;`, restaurant_id)
-		row := conn.QueryRow(context.Background(), query)
+		row := conn.QueryRow(context.Background(), `SELECT id FROM version as v LEFT JOIN menu as m ON m.id=v.menu_id LEFT JOIN restaurant as r ON r.id=m.restaurant_id WHERE r.id=$1 AND v.is_active=true;`, restaurant_id)
 		err := row.Scan(&version)
 		if err != nil{
-			rdb.Close()
 			return Item{}, fmt.Errorf("Error retreiving version %w", err)
 		}
 		//update redis with new one as well
@@ -97,7 +94,6 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 	
 	json, err := rdb.Get(ctx, fmt.Sprintf("restaurant:%d:menu:v%s", restaurant_id, version)).Result()
 	if err != nil{
-		rdb.Close()
 		return Item{}, fmt.Errorf("Error retrieiving menu items %w", err)
 	}
 	fmt.Printf("%s", json)
