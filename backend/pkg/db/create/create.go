@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 // Create connection pool to the database
@@ -21,6 +23,34 @@ func CreateConnectionPool(connections int) (*pgxpool.Pool, error) {
 
 	conn, err := pgxpool.NewWithConfig(context.Background(), config)
 	return conn, nil
+}
+
+func CreateRedisConnection(ctx context.Context) (*redis.Client, error){
+	addr := os.Getenv("REDIS_ADDR")
+	if addr == ""{
+		addr = "6379"
+	}
+
+	pwd := os.Getenv("REDIS_PASSWORD")
+	db:= 0
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr: addr,
+		Password: pwd,
+		DB: db,
+
+		DialTimeout:  10 * time.Second,
+        ReadTimeout:  30 * time.Second,
+        WriteTimeout: 30 * time.Second,
+        PoolSize:     10, 
+        MinIdleConns: 2,
+	})	
+
+	if err := rdb.Ping(ctx).Err(); err != nil{
+		rdb.Close()
+		return nil, fmt.Errorf("Failed to connect to Redis: %w", err)
+	}
+	return rdb, nil
 }
 
 // create database

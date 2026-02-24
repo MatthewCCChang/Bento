@@ -42,3 +42,6 @@ func joinValues(values []interface{}) string {
 	}
 	return strings.Join(strValues, ", ")
 }
+
+//func updateRedis()
+//rest:version
