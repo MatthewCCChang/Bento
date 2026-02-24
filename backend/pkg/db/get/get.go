@@ -75,7 +75,7 @@ func GetSessionOrder(conn *pgxpool.Pool, sessionId int) (map[string]interface{},
 
 //majorty will be redis
 //GetMenu - get from items table where version id is equal to blah if not cached already
-func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaurant_id int) (Item, error){
+func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaurant_id int) ([]Item, error){
 	//get curr version for rest
 	var version string
 	//chekc if version exists in redis alr  
@@ -87,18 +87,18 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 		row := conn.QueryRow(context.Background(), `SELECT id FROM version as v LEFT JOIN menu as m ON m.id=v.menu_id LEFT JOIN restaurant as r ON r.id=m.restaurant_id WHERE r.id=$1 AND v.is_active=true;`, restaurant_id)
 		err := row.Scan(&version)
 		if err != nil{
-			return Item{}, fmt.Errorf("Error retreiving version %w", err)
+			return []Item{}, fmt.Errorf("Error retreiving version %w", err)
 		}
 		//update redis with new one as well
 	}
 	
 	json, err := rdb.Get(ctx, fmt.Sprintf("restaurant:%d:menu:v%s", restaurant_id, version)).Result()
 	if err != nil{
-		return Item{}, fmt.Errorf("Error retrieiving menu items %w", err)
+		return []Item{}, fmt.Errorf("Error retrieiving menu items %w", err)
 	}
 	fmt.Printf("%s", json)
 	
 	//turn json into Items
 
-	return Item{}, nil
+	return []Item{}, nil
 }
