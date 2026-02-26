@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
@@ -79,7 +80,7 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 	//get curr version for rest
 	var version string
 	//chekc if version exists in redis alr  
-	version, err := rdb.Get(ctx, fmt.Sprintf("restaurant:%d:active", restaurant_id)).Result()  //get the curr active
+	version, err := rdb.Get(ctx, fmt.Sprintf("restaurant:%d:active", restaurant_id)).Result()  //get the curr active version
 	//if yes, return the cached json
 	//if not, get menu id and version id then fetch items
 	if err != nil{
@@ -90,11 +91,25 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 			return []Item{}, fmt.Errorf("Error retreiving version %w", err)
 		}
 		//update redis with new one as well
+		//row might need unmarshalling
+		rdb.Set(ctx, fmt.Sprintf("restaurant:%d:active", restaurant_id), row, redis.KeepTTL)
 	}
-	
+	//get menu
 	json, err := rdb.Get(ctx, fmt.Sprintf("restaurant:%d:menu:v%s", restaurant_id, version)).Result()
 	if err != nil{
-		return []Item{}, fmt.Errorf("Error retrieiving menu items %w", err)
+		//fetch from postgres if doesn't exist
+		
+		rows, err := conn.Query(context.Background(), `SELECT id, version_id, name, description, price, category, modifiers FROM item WHERE version_id=$1;`, version)
+		if err != nil{
+			return []Item{}, fmt.Errorf("Error retreiving menu items %w", err)
+		}
+		res, err := pgx.CollectRows(rows, pgx.RowToStructByName[Item])
+		if err != nil{
+			return []Item{}, fmt.Errorf("Error converting menu items into struct %w", err)
+		}
+		//update redis with new menu items
+		rdb.Set(ctx, fmt.Sprintf("restaurant:%d:menu:v%s", restaurant_id, version), res, redis.KeepTTL)
+		return res, nil
 	}
 	fmt.Printf("%s", json)
 	
