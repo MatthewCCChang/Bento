@@ -93,3 +93,8 @@ func CreateTables(conn *pgxpool.Pool) error {
 
 	return nil
 }
+
+//createUser creates a new user
+func createUser(conn *pgxpool.Pool, ctx context.Context , uuid string) error {
+	row, err := 
+}
