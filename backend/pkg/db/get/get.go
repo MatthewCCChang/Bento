@@ -2,6 +2,7 @@ package get
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -9,15 +10,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type JSONB []byte
 type Item struct{
-	Id int
-	Version_id int
-	Name string
-	Description string
-	Price float32
-	Category string
-	Modifiers JSONB
+	Id int	`db:"id"`
+	Version_id int	`db:"version_id"`
+	Name string	`db:"name"`
+	Description string	`db:"description"`
+	Price float64	`db:"price"`
+	Category string	`db:"category"`
+	Modifiers json.RawMessage	`db:"modifiers"`
 }
 type AggregatedItem struct {
 	Name string //item + modifier
@@ -40,7 +40,7 @@ func GetSessionOrder(conn *pgxpool.Pool, sessionId int) (map[string]interface{},
 		var session_id int
 		var user_id int
 		var item string
-		var modifiers JSONB
+		var modifiers json.RawMessage
 		var price float32
 
 		err = rows.Scan(&id, &session_id, &user_id, &item, &modifiers, &price)

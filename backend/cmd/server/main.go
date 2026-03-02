@@ -81,7 +81,8 @@ func main() {
 	ctx := context.Background()
 	redisClient, err := create.CreateRedisConnection(ctx)
 	fmt.Println("Created redis connection", redisClient)
-	_, err = get.GetMenu(ctx, redisClient, conn, 1)
+	res, err := get.GetMenu(ctx, redisClient, conn, 1)
+	fmt.Println(res)
 	fmt.Println("Error is %w", err)
 	redisClient.Close()
 
