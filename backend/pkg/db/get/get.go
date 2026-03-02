@@ -29,7 +29,7 @@ type AggregatedItem struct {
 
 //GetSessionOrder retrieves all rows belonging to the same order
 func GetSessionOrder(conn *pgxpool.Pool, sessionId int) (map[string]interface{}, error) {
-	rows, err := conn.Query(context.Background(), `SELECT * AS total FROM orders WHERE id =$1;`, sessionId)
+	rows, err := conn.Query(context.Background(), `SELECT * FROM orders WHERE id =$1;`, sessionId)
 
 	res := make(map[string]interface{}) 
 	defer rows.Close()
@@ -102,6 +102,7 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 		//fetch from postgres if doesn't exist
 		
 		rows, err := conn.Query(context.Background(), `SELECT id, version_id, name, description, price, category, modifiers FROM item WHERE version_id=$1;`, version)
+		defer rows.Close()
 		if err != nil{
 			return []Item{}, fmt.Errorf("Error retreiving menu items %w", err)
 		}
