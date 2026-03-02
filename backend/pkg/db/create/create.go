@@ -9,6 +9,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	"github.com/MatthewCCChang/Bento/backend/pkg/db/helper"
 )
 
 // Create connection pool to the database
@@ -95,6 +96,10 @@ func CreateTables(conn *pgxpool.Pool) error {
 }
 
 //createUser creates a new user
-func createUser(conn *pgxpool.Pool, ctx context.Context , uuid string) error {
-	row, err := 
+func CreateUser(conn *pgxpool.Pool, ctx context.Context , uuid string) (string, error) {
+	row, err := helper.InsertIntoTable(conn, "users", []string{"uuid"}, []interface{}{uuid}, []string{"id"}, true) //uuid only one required
+	if err != nil {
+		return "", err
+	}
+	return row, nil
 }
