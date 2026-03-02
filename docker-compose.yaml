@@ -12,15 +12,15 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: bento_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
-#   # Redis service
-#   redis:
-#     image: redis:latest
-#     ports:
-#       - "6379:6379"
+  # Redis service
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
     
 #   # minio service
 #   minio:

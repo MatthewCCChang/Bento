@@ -28,12 +28,12 @@ func CreateConnectionPool(connections int) (*pgxpool.Pool, error) {
 func CreateRedisConnection(ctx context.Context) (*redis.Client, error){
 	addr := os.Getenv("REDIS_ADDR")
 	if addr == ""{
-		addr = "6379"
+		addr = "localhost:6379"
 	}
 
 	pwd := os.Getenv("REDIS_PASSWORD")
 	db:= 0
-
+	fmt.Println(pwd, addr)
 	rdb := redis.NewClient(&redis.Options{
 		Addr: addr,
 		Password: pwd,
