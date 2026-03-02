@@ -1,13 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"os"
 	"log"
+	"os"
 
 	"github.com/MatthewCCChang/Bento/backend/pkg/db/create"
 	// "github.com/MatthewCCChang/Bento/backend/pkg/db/delete"
-	"github.com/MatthewCCChang/Bento/backend/pkg/db/update"
+	"github.com/MatthewCCChang/Bento/backend/pkg/db/get"
+	//"github.com/MatthewCCChang/Bento/backend/pkg/db/update"
 	"github.com/joho/godotenv"
 )
 
@@ -38,9 +40,9 @@ func main() {
 	//creating tables
 	// err = create.CreateTables(conn)
 	//create indiv tables
-	// _, err = create.CreateTable(conn, "users", "id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, uuid TEXT NOT NULL UNIQUE, email TEXT, name TEXT, password TEXT")
+	// _, err = create.CreateTable(conn, "order_items", "id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, session_id INT NOT NULL REFERENCES session(id), user_id INT NOT NULL REFERENCES users(id), item TEXT NOT NULL, modifiers JSONB, price INT NOT NULL")
 	// if err != nil {
-	// 	fmt.Printf("Error creating users table: %v\n", err)
+	// 	fmt.Printf("Error creating order table: %v\n", err)
 	// 	return
 	// }
 
@@ -62,16 +64,25 @@ func main() {
 	// 	fmt.Printf("Error inserting into menu: %v\n", err)
 	// }
 
-	_, err = update.InsertIntoTable(conn, "version", 
-    []string{"menu_id", "s3_url", "is_active"}, 
-    []interface{}{1, "https://s3.amazonaws.com/assets/menu-v1.json", true})
-	if err != nil {
-		fmt.Printf("Error inserting into version: %v\n", err)
-	}
-	_, err = update.InsertIntoTable(conn, "item", 
-    []string{"version_id", "name", "description", "price", "category", "modifiers"}, 
-    []interface{}{1, "Database Burger", "Highly indexed flavors", 12.99, "Entrees", `{"extra_cheese": true, "temp": "medium"}`})
-	if err != nil {
-		fmt.Printf("Error inserting into item: %v\n", err)
-	}
+	// _, err = update.InsertIntoTable(conn, "version", 
+    // []string{"menu_id", "s3_url", "is_active"}, 
+    // []interface{}{1, "https://s3.amazonaws.com/assets/menu-v1.json", true})
+	// if err != nil {
+	// 	fmt.Printf("Error inserting into version: %v\n", err)
+	// }
+	// _, err = update.InsertIntoTable(conn, "item", 
+    // []string{"version_id", "name", "description", "price", "category", "modifiers"}, 
+    // []interface{}{1, "Database Burger", "Highly indexed flavors", 12.99, "Entrees", `{"extra_cheese": true, "temp": "medium"}`})
+	// if err != nil {
+	// 	fmt.Printf("Error inserting into item: %v\n", err)
+	// }
+
+	//create redis
+	ctx := context.Background()
+	redisClient, err := create.CreateRedisConnection(ctx)
+	fmt.Println("Created redis connection", redisClient)
+	_, err = get.GetMenu(ctx, redisClient, conn, 1)
+	fmt.Println("Error is %w", err)
+	redisClient.Close()
+
 }

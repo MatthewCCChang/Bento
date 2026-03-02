@@ -80,13 +80,15 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 	//get curr version for rest
 	var version string
 	//chekc if version exists in redis alr  
+	fmt.Println("Getting from redis")
 	version, err := rdb.Get(ctx, fmt.Sprintf("restaurant:%d:active", restaurant_id)).Result()  //get the curr active version
 	//if yes, return the cached json
 	//if not, get menu id and version id then fetch items
 	if err != nil{
 		//fetch from db 
-		row := conn.QueryRow(context.Background(), `SELECT id FROM version as v LEFT JOIN menu as m ON m.id=v.menu_id LEFT JOIN restaurant as r ON r.id=m.restaurant_id WHERE r.id=$1 AND v.is_active=true;`, restaurant_id)
+		row := conn.QueryRow(context.Background(), `SELECT v.id FROM version as v LEFT JOIN menu as m ON m.id=v.menu_id LEFT JOIN restaurant as r ON r.id=m.restaurant_id WHERE r.id=$1 AND v.is_active=true;`, restaurant_id)
 		err := row.Scan(&version)
+		fmt.Println(version)
 		if err != nil{
 			return []Item{}, fmt.Errorf("Error retreiving version %w", err)
 		}
