@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	"github.com/MatthewCCChang/Bento/backend/pkg/db/helper"
 )
 
 type Item struct{
@@ -94,7 +95,7 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 		}
 		//update redis with new one as well
 		//row might need unmarshalling
-		rdb.Set(ctx, fmt.Sprintf("restaurant:%d:active", restaurant_id), row, redis.KeepTTL)
+		helper.UpdateRedis(ctx, rdb, fmt.Sprintf("restaurant:%d:active", restaurant_id), row)
 	}
 	//get menu
 	json, err := rdb.Get(ctx, fmt.Sprintf("restaurant:%d:menu:v%s", restaurant_id, version)).Result()
@@ -111,7 +112,7 @@ func GetMenu(ctx context.Context, rdb *redis.Client, conn *pgxpool.Pool, restaur
 			return []Item{}, fmt.Errorf("Error converting menu items into struct %w", err)
 		}
 		//update redis with new menu items
-		rdb.Set(ctx, fmt.Sprintf("restaurant:%d:menu:v%s", restaurant_id, version), res, redis.KeepTTL)
+		helper.UpdateRedis(ctx, rdb, fmt.Sprintf("restaurant:%d:menu:v%s", restaurant_id, version), res)
 		return res, nil
 	}
 	fmt.Printf("%s", json)

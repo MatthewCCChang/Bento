@@ -1,4 +1,9 @@
 package update
+//UpdateUser()
 
-//func updateRedis()
+//updateItem()
+
+//updateMenu()  updated_at
+
+//updateRestaurant()
 //rest:version

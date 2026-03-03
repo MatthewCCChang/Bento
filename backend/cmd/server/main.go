@@ -8,7 +8,7 @@ import (
 
 	"github.com/MatthewCCChang/Bento/backend/pkg/db/create"
 	// "github.com/MatthewCCChang/Bento/backend/pkg/db/delete"
-	//"github.com/MatthewCCChang/Bento/backend/pkg/db/get"
+	"github.com/MatthewCCChang/Bento/backend/pkg/db/get"
 	//"github.com/MatthewCCChang/Bento/backend/pkg/db/update"
 	"github.com/joho/godotenv"
 )
@@ -79,16 +79,16 @@ func main() {
 
 	//create redis
 	ctx := context.Background()
-	// redisClient, err := create.CreateRedisConnection(ctx)
-	// fmt.Println("Created redis connection", redisClient)
-	// res, err := get.GetMenu(ctx, redisClient, conn, 1)
-	// fmt.Println(res)
-	// fmt.Println("Error is %w", err)
-	// redisClient.Close()
-	id, err := create.CreateUser(conn, ctx, "d40f310d-60b0-4370-afbf-b4077a7a1f96")
-	if err != nil{
-		fmt.Println("Error creatin user: %w", err)
-	}
-	fmt.Println("ID returned: %s", id)
+	redisClient, err := create.CreateRedisConnection(ctx)
+	fmt.Println("Created redis connection", redisClient)
+	res, err := get.GetMenu(ctx, redisClient, conn, 1)
+	fmt.Println(res)
+	fmt.Println("Error is %w", err)
+	redisClient.Close()
+	// id, err := create.CreateUser(conn, ctx, "d40f310d-60b0-4370-afbf-b4077a7a1f96")
+	// if err != nil{
+	// 	fmt.Println("Error creatin user: %w", err)
+	// }
+	// fmt.Println(fmt.Sprintf("ID returned: %s\n", id))
 
 }
