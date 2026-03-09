@@ -10,7 +10,7 @@ import (
 )
 
 //insert into table
-func UpdateTable(conn *pgxpool.Pool, table string, columns []string, values []interface{}, retVals []string, ret bool, id int) (string, error) {
+func UpdateTable(conn *pgxpool.Pool, table string, columns, cond []string, values, condVals []interface{}, retVals []string, ret bool) (string, error) {
 	length, length2 := len(columns), len(values)
 	if length != length2 {
 		return "", fmt.Errorf("number of columns and values must be the same")
@@ -36,12 +36,22 @@ func UpdateTable(conn *pgxpool.Pool, table string, columns []string, values []in
         pairs = append(pairs, fmt.Sprintf(`%s=$%d`, cleanCol, i+1))
         args = append(args, values[i])
     }
-
 	//join parmaterized statements
 	query.WriteString(strings.Join(pairs, `, `))
-	//add WHERE clause
-	args = append(args, id)
-	query.WriteString(fmt.Sprintf(` WHERE id=$%d`, len(columns) + 1))
+	colCount := len(columns)
+
+	query.WriteString(fmt.Sprintf(` WHERE `))
+
+	var condition []string
+	//add WHERE clause can have multiple
+	for i, col := range cond {
+		cleanCol := pgx.Identifier{col}.Sanitize()
+
+		condition = append(condition, fmt.Sprintf(`%s=$%d`, cleanCol, colCount+i))
+        args = append(args, condVals[i])
+	}
+	query.WriteString(strings.Join(condition, ` AND `))
+	
 
 	//if return val requested
 	if ret{
