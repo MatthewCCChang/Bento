@@ -47,7 +47,7 @@ func UpdateTable(conn *pgxpool.Pool, table string, columns, cond []string, value
 	for i, col := range cond {
 		cleanCol := pgx.Identifier{col}.Sanitize()
 
-		condition = append(condition, fmt.Sprintf(`%s=$%d`, cleanCol, colCount+i))
+		condition = append(condition, fmt.Sprintf(`%s=$%d`, cleanCol, colCount+i+1))
         args = append(args, condVals[i])
 	}
 	query.WriteString(strings.Join(condition, ` AND `))
