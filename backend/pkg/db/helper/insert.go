@@ -17,9 +17,9 @@ func InsertIntoTable(conn *pgxpool.Pool, table string, columns []string, values 
 	}
 	cleanTable := pgx.Identifier{table}.Sanitize()
 	fmt.Println(cleanTable)
-	cols := joinColumns(columns)
-	vals := joinValues(values)
-	rets := joinColumns(retVals)
+	cols := JoinColumns(columns)
+	vals := JoinValues(values)
+	rets := JoinColumns(retVals)
 	//fmt.Printf("Inserting into table %s with columns %s and values %s\n", table, cols, vals)
 	//fmt.Println("Query is ", query)
 	query := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, cleanTable, cols, vals)
@@ -37,7 +37,7 @@ func InsertIntoTable(conn *pgxpool.Pool, table string, columns []string, values 
 	return row, nil
 }
 
-func joinColumns(columns []string) string {
+func JoinColumns(columns []string) string {
 	var res []string
 	for _, col := range columns{
 		clean := pgx.Identifier{col}.Sanitize()
@@ -46,7 +46,7 @@ func joinColumns(columns []string) string {
 	return strings.Join(res, ", ")
 }
 
-func joinValues(values []interface{}) string {
+func JoinValues(values []interface{}) string {
 	var strValues []string
 	for _, val := range values {
 		switch v:= val.(type) {
