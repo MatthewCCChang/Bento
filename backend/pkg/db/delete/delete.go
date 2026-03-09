@@ -28,3 +28,12 @@ func DeleteTables(conn *pgxpool.Pool) error {
 	}
 	return nil
 }
+
+func DeleteRow(ctx context.Context, conn *pgxpool.Pool, table, cond, vals string) (error){
+	query := fmt.Sprint(`DELETE FROM $1 WHERE $2=$3;`)
+	_, err := conn.Exec(ctx, query, table, cond, vals)
+	if err != nil{
+		return err
+	}
+	return nil
+}
