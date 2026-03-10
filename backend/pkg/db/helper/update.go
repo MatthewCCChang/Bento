@@ -10,10 +10,10 @@ import (
 )
 
 //insert into table
-func UpdateTable(conn *pgxpool.Pool, table string, columns, cond []string, values, condVals []interface{}, retVals []string, ret bool) (string, error) {
+func UpdateTable(conn *pgxpool.Pool, table string, columns, cond []string, values, condVals []interface{}, retVals []string, ret bool) (map[string]interface{}, error) {
 	length, length2 := len(columns), len(values)
 	if length != length2 {
-		return "", fmt.Errorf("number of columns and values must be the same")
+		return map[string]interface{}{}, fmt.Errorf("number of columns and values must be the same")
 	}
 	cleanTable := pgx.Identifier{table}.Sanitize()
 	fmt.Println(cleanTable)
@@ -60,13 +60,17 @@ func UpdateTable(conn *pgxpool.Pool, table string, columns, cond []string, value
 	query.WriteByte(';')
 
 	//execute query with arguments as $1, $2...etc
-	tag := conn.QueryRow(context.Background(), query.String(), args...)
-	var row string
-	err := tag.Scan(&row)
+	rows, err := conn.Query(context.Background(), query.String(), args...)
 	if err != nil {
-		return "", err
+		return map[string]interface{}{}, err
 	}
-	return row, nil
+
+	res, err := pgx.RowToMap(rows)
+	if err != nil{
+		return map[string]interface{}{}, err
+	}
+
+	return res, nil
 }
 
 
