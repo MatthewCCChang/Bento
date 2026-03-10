@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,6 +28,47 @@ type AggregatedItem struct {
 	UserIds []int
 	Session_id int
 }
+
+func GetRow(conn *pgxpool.Pool, table string, cond []string, vals []interface{}, retVals []string) (map[string]interface{}, error){
+	cleanTable := pgx.Identifier{table}.Sanitize()
+
+	rets := helper.JoinColumns(retVals)
+
+	var query strings.Builder
+	query.Grow(256)
+
+	query.WriteString(fmt.Sprintf(`SELECT %s FROM %s WHERE `, rets, cleanTable))
+
+	//store key=value statements with parameterized values
+	var pairs []string
+	var args []any
+	
+	for i, col := range cond {
+        // ALWAYS sanitize column names too!
+        cleanCol := pgx.Identifier{col}.Sanitize() 
+        
+        // i is 0-indexed, but SQL parameters are 1-indexed
+        pairs = append(pairs, fmt.Sprintf(`%s=$%d`, cleanCol, i+1))
+        args = append(args, vals[i])
+    }
+
+	//join parmaterized statements
+	query.WriteString(strings.Join(pairs, `, `))
+	query.WriteByte(';')
+
+	rows, err := conn.Query(context.Background(), query.String(), args...)
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+
+	res, err := pgx.RowToMap(rows)
+	if err != nil{
+		return map[string]interface{}{}, err
+	}
+
+	return res, nil
+}
+
 
 //GetSessionOrder retrieves all rows belonging to the same order
 func GetSessionOrder(conn *pgxpool.Pool, sessionId int) (map[string]interface{}, error) {
